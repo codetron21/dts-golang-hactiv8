@@ -1,7 +1,9 @@
 package controller
 
-import "final_project/repository"
+import (
+	"final_project/service"
+)
 
 type CommentController struct {
-	Repository repository.CommentRepository
+	service service.CommentService
 }

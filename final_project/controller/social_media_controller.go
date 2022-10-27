@@ -1,7 +1,9 @@
 package controller
 
-import "final_project/repository"
+import (
+	"final_project/service"
+)
 
 type SocialMediaController struct {
-	Repository repository.SocialMediaRepository
+	service service.SocialMediaService
 }

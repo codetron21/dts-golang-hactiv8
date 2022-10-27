@@ -5,5 +5,5 @@ import (
 )
 
 type CommentRepository struct {
-	Database *datasource.Database
+	database *datasource.Database
 }

@@ -16,5 +16,14 @@ func New(db *datasource.Database) Repository {
 		UserRepository: UserRepository{
 			database: db,
 		},
+		PhotoRepository: PhotoRepository{
+			database: db,
+		},
+		CommentRepository: CommentRepository{
+			database: db,
+		},
+		SocialMediaRepository: SocialMediaRepository{
+			database: db,
+		},
 	}
 }
