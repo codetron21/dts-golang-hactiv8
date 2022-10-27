@@ -10,7 +10,11 @@ import (
 	"gorm.io/gorm"
 )
 
-func New() (*gorm.DB, error) {
+type Database struct {
+	DB *gorm.DB
+}
+
+func Start() (*Database, error) {
 	conn := fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		config.DB_HOST,
@@ -34,5 +38,7 @@ func New() (*gorm.DB, error) {
 		return nil, err
 	}
 
-	return db, nil
+	return &Database{
+		DB: db,
+	}, nil
 }

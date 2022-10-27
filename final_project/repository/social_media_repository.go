@@ -1,7 +1,7 @@
 package repository
 
-import "gorm.io/gorm"
+import "final_project/datasource"
 
 type SocialMediaRepository struct {
-	DB *gorm.DB
+	Database *datasource.Database
 }

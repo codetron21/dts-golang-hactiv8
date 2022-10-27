@@ -2,19 +2,26 @@ package route
 
 import (
 	"final_project/config"
+	"final_project/controller"
+	"final_project/middleware"
 	"final_project/urls"
 	"fmt"
 
 	"github.com/gin-gonic/gin"
 )
 
-func StartServer() error {
+func StartServer(ctl controller.Controller) error {
 	r := gin.Default()
 
-	r.POST(urls.POST_USERS_LOGIN)
-	r.POST(urls.POST_USERS_REGISTER)
-	r.PUT(urls.PUT_USER)
-	r.DELETE(urls.DELETE_USER)
+	r.POST(urls.POST_USERS_LOGIN, ctl.UserController.Login)
+	r.POST(urls.POST_USERS_REGISTER, ctl.UserController.Register)
+
+	authorized := r.Group("/")
+	{
+		authorized.Use(middleware.Authentication())
+		authorized.PUT(urls.PUT_USER, ctl.UserController.UpdateUserById)
+		authorized.DELETE(urls.DELETE_USER, ctl.UserController.DeleteUserById)
+	}
 
 	r.POST(urls.POST_PHOTOS)
 	r.GET(urls.GET_PHOTOS)

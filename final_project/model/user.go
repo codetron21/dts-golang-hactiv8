@@ -2,8 +2,6 @@ package model
 
 import (
 	"errors"
-	"regexp"
-	"strconv"
 	"time"
 
 	"github.com/asaskevich/govalidator"
@@ -11,36 +9,19 @@ import (
 )
 
 type User struct {
-	ID           int        `gorm:"column:id;primaryKey;not null" json:"id"`
-	Username     string     `gorm:"column:username;type:varchar(50);uniqueIndex;not null" json:"username" valid:"required~Username must not be empty"`
-	Email        string     `gorm:"column:email;uniqueIndex;not null" json:"email" valid:"email~Email invalid,required~Email must not be empty"`
-	Password     string     `gorm:"column:password;not null" json:"password" valid:"required~Password must not be empty,minstringlength(6)~Password length at least have 6 characters"`
-	Age          int        `gorm:"column:age;not null" json:"age" valid:"required~Age must not be empty,min(8)~Age min greater than 8"`
-	CreatedAt    *time.Time `gorm:"column:created_at" json:"created_at"`
-	UpdatedAt    *time.Time `gorm:"column:updated_at" json:"updated_at"`
-	Photos       []Photo
-	Comments     []Comment
-	SocialMedias []SocialMedia
+	ID           int           `gorm:"column:id;primaryKey;not null" json:"id"`
+	Username     string        `gorm:"column:username;type:varchar(50);uniqueIndex;not null" json:"username" valid:"required~username must not be empty"`
+	Email        string        `gorm:"column:email;uniqueIndex;not null" json:"email" valid:"email~Email invalid,required~email must not be empty"`
+	Password     string        `gorm:"column:password;not null" json:"password" valid:"required~password must not be empty,minstringlength(6)~password length at least have 6 characters"`
+	Age          int           `gorm:"column:age;not null" json:"age" valid:"required~age must not be empty"`
+	CreatedAt    *time.Time    `gorm:"column:created_at" json:"created_at,omitempty"`
+	UpdatedAt    *time.Time    `gorm:"column:updated_at" json:"updated_at,omitempty"`
+	Photos       []Photo       `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"column:photos,omitempty"`
+	Comments     []Comment     `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"comments:photos,omitempty"`
+	SocialMedias []SocialMedia `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"social_medias:photos,omitempty"`
 }
 
 func (u User) BeforeCreate(db *gorm.DB) error {
-	govalidator.ParamTagMap["min"] = govalidator.ParamValidator(func(str string, params ...string) bool {
-		minimum := params[0]
-		age, err := strconv.Atoi(str)
-		if err != nil {
-			return false
-		}
-
-		minAge, err := strconv.Atoi(minimum)
-		if err != nil {
-			return false
-		}
-
-		return age > minAge
-	})
-
-	govalidator.ParamTagRegexMap["min"] = regexp.MustCompile(`^min\\((\\d+)\\)$`)
-
 	isValid, err := govalidator.ValidateStruct(u)
 	if err != nil {
 		return err
@@ -48,6 +29,10 @@ func (u User) BeforeCreate(db *gorm.DB) error {
 
 	if !isValid {
 		return errors.New("invalid user data")
+	}
+
+	if u.Age < 9 {
+		return errors.New("age must greater than 8")
 	}
 
 	return nil

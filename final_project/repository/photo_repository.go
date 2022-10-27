@@ -1,7 +1,9 @@
 package repository
 
-import "gorm.io/gorm"
+import (
+	"final_project/datasource"
+)
 
 type PhotoRepository struct {
-	DB *gorm.DB
+	Database *datasource.Database
 }
