@@ -91,7 +91,7 @@ func (d Database) UpdateOrderById(newOrder *model.Order) error {
 		return errors.New("order with id not found")
 	}
 
-	err = d.db.Save(&newOrder).Error
+	err = d.db.Model(&model.Order{}).Where("order_id = ?", newOrder.ID).Updates(&newOrder).Error
 	if err != nil {
 		log.Println("error update:", err)
 		return errors.New("error update order data")
