@@ -21,11 +21,12 @@ func New(db database.Database) Controller {
 }
 
 func (c Controller) GetOrders(ctx *gin.Context) {
-	orders, err := c.db.GetOrders()
+	orders := []model.Order{}
+	err := c.db.GetOrders(&orders)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"code":    http.StatusInternalServerError,
-			"message": "error get orders data",
+			"message": err.Error(),
 		})
 		return
 	}
@@ -49,7 +50,7 @@ func (c Controller) CreateOrder(ctx *gin.Context) {
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"code":    http.StatusInternalServerError,
-			"message": "error create order",
+			"message": err.Error(),
 		})
 		return
 	}
@@ -60,11 +61,7 @@ func (c Controller) CreateOrder(ctx *gin.Context) {
 func (c Controller) UpdateOrderById(ctx *gin.Context) {
 	var newOrder model.Order
 
-	orderId := ctx.Param("orderId")
 	err := ctx.BindJSON(&newOrder)
-
-	log.Println("print new order (controller):", newOrder)
-
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"code":    http.StatusInternalServerError,
@@ -73,6 +70,7 @@ func (c Controller) UpdateOrderById(ctx *gin.Context) {
 		return
 	}
 
+	orderId := ctx.Param("orderId")
 	id, err := strconv.Atoi(orderId)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
@@ -82,16 +80,21 @@ func (c Controller) UpdateOrderById(ctx *gin.Context) {
 		return
 	}
 
-	updatedOrder, err := c.db.UpdateOrderById(id, &newOrder)
+	newOrder.ID = id
+
+	log.Println("order id (controller):", id)
+	log.Println("print new order (controller):", newOrder)
+
+	err = c.db.UpdateOrderById(&newOrder)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{
 			"code":    http.StatusNotFound,
-			"message": "order id not found",
+			"message": err.Error(),
 		})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, updatedOrder)
+	ctx.JSON(http.StatusOK, newOrder)
 }
 
 func (c Controller) DeleteOrderById(ctx *gin.Context) {
@@ -106,14 +109,16 @@ func (c Controller) DeleteOrderById(ctx *gin.Context) {
 		return
 	}
 
-	deletedId, err := c.db.DeleteOrderById(id)
+	log.Println("order id (controller):", id)
+
+	err = c.db.DeleteOrderById(id)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{
 			"code":    http.StatusNotFound,
-			"message": "order id not found",
+			"message": err.Error(),
 		})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"order_id": deletedId})
+	ctx.JSON(http.StatusOK, gin.H{"order_id": id})
 }

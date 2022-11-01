@@ -2,6 +2,7 @@ package database
 
 import (
 	"assignment_2/model"
+	"errors"
 	"fmt"
 	"log"
 
@@ -45,59 +46,71 @@ func Start() (Database, error) {
 
 func (d Database) CreateOrder(order model.Order) (model.Order, error) {
 	err := d.db.Create(&order).Error
-
 	if err != nil {
 		return model.Order{}, err
 	}
 
 	orderId := order.ID
+	data := model.Order{}
+	err = d.GetOrderById(&data, orderId)
 
-	createResult, err := d.GetOrderById(orderId)
-
-	return createResult, err
+	return data, err
 }
 
-func (d Database) GetOrderById(orderId int) (model.Order, error) {
-	var order = model.Order{}
+func (d Database) GetOrderById(order *model.Order, orderId int) error {
 	order.ID = orderId
-	err := d.db.Model(&model.Order{}).Preload("Items").Find(&order).Error
+
 	log.Println("get order by id:", order)
-	return order, err
-}
 
-func (d Database) GetOrders() ([]model.Order, error) {
-	var orders []model.Order
-	err := d.db.Model(&model.Order{}).Preload("Items").Find(&orders).Error
-	log.Println("get orders:", orders)
-	return orders, err
-}
-
-func (d Database) UpdateOrderById(orderId int, newOrder *model.Order) (model.Order, error) {
-	newOrder.ID = orderId
-
-	findResult := d.db.First(&model.Order{}, orderId)
-	err := findResult.Error
+	err := d.db.Model(&model.Order{}).Preload("Items").Find(&order).Error
 	if err != nil {
-		return model.Order{}, err
+		fmt.Println("error get data by id", err)
+		return errors.New("error get order by id")
+	}
+
+	return nil
+}
+
+func (d Database) GetOrders(orders *[]model.Order) error {
+	err := d.db.Model(&model.Order{}).Preload("Items").Find(orders).Error
+	if err != nil {
+		fmt.Println("error get orders", err)
+		return errors.New("error get orders")
+	}
+
+	log.Println("orders", orders)
+
+	return nil
+}
+
+func (d Database) UpdateOrderById(newOrder *model.Order) error {
+	log.Println("print new order:", newOrder)
+
+	err := d.db.First(&model.Order{}, newOrder.ID).Error
+	if err != nil {
+		return errors.New("order with id not found")
 	}
 
 	err = d.db.Save(&newOrder).Error
-
-	log.Println("print new order (database):", newOrder)
-
-	return *newOrder, err
-}
-
-func (d Database) DeleteOrderById(orderId int) (int, error) {
-	findResult := d.db.First(&model.Order{}, orderId)
-	err := findResult.Error
 	if err != nil {
-		return -1, err
+		log.Println("error update:", err)
+		return errors.New("error update order data")
 	}
 
-	result := d.db.Delete(&model.Order{}, orderId)
+	return nil
+}
 
-	log.Println("delete result:", result)
+func (d Database) DeleteOrderById(orderId int) error {
+	err := d.db.First(&model.Order{}, orderId).Error
+	if err != nil {
+		return errors.New("order with id not found")
+	}
 
-	return orderId, result.Error
+	err = d.db.Delete(&model.Order{}, orderId).Error
+	if err != nil {
+		log.Println("error delete:", err)
+		return errors.New("error delete data order")
+	}
+
+	return nil
 }
