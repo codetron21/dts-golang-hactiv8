@@ -50,7 +50,7 @@ func (d Database) CreateOrder(order model.Order) (model.Order, error) {
 		return model.Order{}, err
 	}
 
-	orderId := order.OrderId
+	orderId := order.ID
 
 	createResult, err := d.GetOrderById(orderId)
 
@@ -59,7 +59,7 @@ func (d Database) CreateOrder(order model.Order) (model.Order, error) {
 
 func (d Database) GetOrderById(orderId int) (model.Order, error) {
 	var order = model.Order{}
-	order.OrderId = orderId
+	order.ID = orderId
 	err := d.db.Model(&model.Order{}).Preload("Items").Find(&order).Error
 	log.Println("get order by id:", order)
 	return order, err
@@ -73,7 +73,7 @@ func (d Database) GetOrders() ([]model.Order, error) {
 }
 
 func (d Database) UpdateOrderById(orderId int, newOrder *model.Order) (model.Order, error) {
-	newOrder.OrderId = orderId
+	newOrder.ID = orderId
 
 	findResult := d.db.First(&model.Order{}, orderId)
 	err := findResult.Error
@@ -89,7 +89,15 @@ func (d Database) UpdateOrderById(orderId int, newOrder *model.Order) (model.Ord
 }
 
 func (d Database) DeleteOrderById(orderId int) (int, error) {
+	findResult := d.db.First(&model.Order{}, orderId)
+	err := findResult.Error
+	if err != nil {
+		return -1, err
+	}
+
 	result := d.db.Delete(&model.Order{}, orderId)
+
 	log.Println("delete result:", result)
+
 	return orderId, result.Error
 }

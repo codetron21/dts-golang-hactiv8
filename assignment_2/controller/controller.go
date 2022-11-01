@@ -24,7 +24,7 @@ func (c Controller) GetOrders(ctx *gin.Context) {
 	orders, err := c.db.GetOrders()
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-			"code":    "500",
+			"code":    http.StatusInternalServerError,
 			"message": "error get orders data",
 		})
 		return
@@ -39,7 +39,7 @@ func (c Controller) CreateOrder(ctx *gin.Context) {
 	err := ctx.BindJSON(&newOrder)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-			"code":    "500",
+			"code":    http.StatusInternalServerError,
 			"message": "error bind json request",
 		})
 		return
@@ -48,7 +48,7 @@ func (c Controller) CreateOrder(ctx *gin.Context) {
 	orderResult, err := c.db.CreateOrder(newOrder)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-			"code":    "500",
+			"code":    http.StatusInternalServerError,
 			"message": "error create order",
 		})
 		return
@@ -67,7 +67,7 @@ func (c Controller) UpdateOrderById(ctx *gin.Context) {
 
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-			"code":    "500",
+			"code":    http.StatusInternalServerError,
 			"message": "error bind json request",
 		})
 		return
@@ -76,7 +76,7 @@ func (c Controller) UpdateOrderById(ctx *gin.Context) {
 	id, err := strconv.Atoi(orderId)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-			"code":    "500",
+			"code":    http.StatusInternalServerError,
 			"message": "error order id not recognized",
 		})
 		return
@@ -85,7 +85,7 @@ func (c Controller) UpdateOrderById(ctx *gin.Context) {
 	updatedOrder, err := c.db.UpdateOrderById(id, &newOrder)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{
-			"code":    "404",
+			"code":    http.StatusNotFound,
 			"message": "order id not found",
 		})
 		return
@@ -100,7 +100,7 @@ func (c Controller) DeleteOrderById(ctx *gin.Context) {
 	id, err := strconv.Atoi(orderId)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-			"code":    "500",
+			"code":    http.StatusInternalServerError,
 			"message": "error order id not recognized",
 		})
 		return
@@ -109,7 +109,7 @@ func (c Controller) DeleteOrderById(ctx *gin.Context) {
 	deletedId, err := c.db.DeleteOrderById(id)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusNotFound, gin.H{
-			"code":    "400",
+			"code":    http.StatusNotFound,
 			"message": "order id not found",
 		})
 		return
