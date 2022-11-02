@@ -25,7 +25,7 @@ func (ps PhotoService) CreatePhoto(userId int, photo *model.Photo) error {
 	return nil
 }
 
-func (ps PhotoService) GetPhotos(userId int) (*[]model.Photo, error) {
+func (ps PhotoService) GetPhotos(userId int) ([]model.Photo, error) {
 	err := ps.userRepo.FindUserById(userId)
 	if err != nil {
 		return nil, err
@@ -36,5 +36,36 @@ func (ps PhotoService) GetPhotos(userId int) (*[]model.Photo, error) {
 		return nil, err
 	}
 
-	return photos, nil
+	return *photos, nil
+}
+
+func (ps PhotoService) UpdatePhotoById(photo *model.Photo, photoId int, userId int) error {
+	photo.ID = photoId
+	photo.UserID = userId
+
+	err := ps.userRepo.FindUserById(photo.UserID)
+	if err != nil {
+		return err
+	}
+
+	err = ps.photoRepo.UpdatePhoto(photo)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (ps PhotoService) DeletePhotoById(photoId int, userId int) error {
+	err := ps.userRepo.FindUserById(userId)
+	if err != nil {
+		return err
+	}
+
+	err = ps.photoRepo.DeletePhotoById(photoId)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

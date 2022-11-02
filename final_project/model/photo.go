@@ -16,7 +16,8 @@ type Photo struct {
 	UserID    int        `gorm:"column:user_id;not null" json:"user_id"`
 	CreatedAt *time.Time `gorm:"column:created_at" json:"created_at,omitempty"`
 	UpdatedAt *time.Time `gorm:"updated_at" json:"updated_at,omitempty"`
-	Comments  []Comment  `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"column:comments,omitempty"`
+	Comments  []Comment  `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"comments,omitempty"`
+	User      *User      `json:"User,omitempty"`
 }
 
 func (p Photo) BeforeCreate(db *gorm.DB) error {

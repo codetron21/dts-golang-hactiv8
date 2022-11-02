@@ -5,9 +5,7 @@ import (
 	"final_project/middleware"
 	"final_project/model"
 	"final_project/service"
-	"final_project/urls"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
@@ -57,21 +55,10 @@ func (ctl UserController) Login(ctx *gin.Context) {
 }
 
 func (ctl UserController) DeleteUserById(ctx *gin.Context) {
-	userIdStr := ctx.Param(urls.PATH_USER_ID)
-
-	userId, err := strconv.Atoi(userIdStr)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, helpers.CreateErrorResponse(
-			http.StatusBadRequest,
-			"Invalid path user id",
-		))
-		return
-	}
-
 	userData := ctx.MustGet(middleware.USER_DATA).(jwt.MapClaims)
 	userIdToken := int(userData[helpers.CLAIM_ID].(float64))
 
-	err = ctl.service.DeleteUserById(userIdToken, userId)
+	err := ctl.service.DeleteUserById(userIdToken)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, helpers.CreateErrorResponse(
 			http.StatusBadRequest,
@@ -87,22 +74,10 @@ func (ctl UserController) DeleteUserById(ctx *gin.Context) {
 
 func (ctl UserController) UpdateUserById(ctx *gin.Context) {
 	newUser := getUserRequest(ctx)
-
-	userIdStr := ctx.Param(urls.PATH_USER_ID)
-
-	userId, err := strconv.Atoi(userIdStr)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, helpers.CreateErrorResponse(
-			http.StatusBadRequest,
-			"Invalid path user id",
-		))
-		return
-	}
-
 	userData := ctx.MustGet(middleware.USER_DATA).(jwt.MapClaims)
 	userIdToken := int(userData[helpers.CLAIM_ID].(float64))
 
-	updatedUser, err := ctl.service.UpdateUserById(newUser, userIdToken, userId)
+	err := ctl.service.UpdateUserById(newUser, userIdToken)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, helpers.CreateErrorResponse(
 			http.StatusBadRequest,
@@ -112,11 +87,11 @@ func (ctl UserController) UpdateUserById(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{
-		"id":         updatedUser.ID,
-		"email":      updatedUser.Email,
-		"username":   updatedUser.Username,
-		"age":        updatedUser.Age,
-		"updated_at": updatedUser.UpdatedAt,
+		"id":         newUser.ID,
+		"email":      newUser.Email,
+		"username":   newUser.Username,
+		"age":        newUser.Age,
+		"updated_at": newUser.UpdatedAt,
 	})
 }
 

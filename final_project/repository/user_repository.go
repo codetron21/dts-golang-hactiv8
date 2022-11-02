@@ -13,20 +13,18 @@ func (repo UserRepository) CreateUser(user *model.User) error {
 	return repo.database.DB.Create(user).Error
 }
 
-func (repo UserRepository) UpdateUser(user *model.User) (*model.User, error) {
-	currentUser := model.User{}
-	repo.database.DB.First(&currentUser, "id = ?", user.ID)
-
-	currentUser.Email = user.Email
-	currentUser.Username = user.Username
-
-	err := repo.database.DB.Save(&currentUser).Error
-
+func (repo UserRepository) UpdateUser(user *model.User) error {
+	err := repo.database.DB.Model(&model.User{}).Where("id = ?", user.ID).Updates(user).Error
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return &currentUser, nil
+	err = repo.database.DB.First(user, user.ID).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (repo UserRepository) FindUserById(userId int) error {

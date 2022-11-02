@@ -14,7 +14,6 @@ const CLAIM_ID = "id"
 func GenerateToken(id int, email string) (string, error) {
 	claims := jwt.MapClaims{
 		CLAIM_ID: id,
-		"email":  email,
 	}
 
 	parseToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

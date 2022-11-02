@@ -52,36 +52,28 @@ func (us UserService) LoginUser(user *model.User) (jwt string, err error) {
 	return
 }
 
-func (us UserService) UpdateUserById(user *model.User, userIdFromClaim int, userId int) (*model.User, error) {
-	if userIdFromClaim != userId {
-		return nil, errors.New("invalid id")
-	}
-
-	err := us.repository.FindUserById(userId)
-	if err != nil {
-		return nil, errors.New("user not found")
-	}
-
-	user.ID = userId
-	updatedUser, err := us.repository.UpdateUser(user)
-	if err != nil {
-		return nil, errors.New("error update user")
-	}
-
-	return updatedUser, nil
-}
-
-func (us UserService) DeleteUserById(userIdFromClaim int, userId int) error {
-	if userIdFromClaim != userId {
-		return errors.New("invalid id")
-	}
-
-	err := us.repository.FindUserById(userId)
+func (us UserService) UpdateUserById(user *model.User, userIdFromClaim int) error {
+	err := us.repository.FindUserById(userIdFromClaim)
 	if err != nil {
 		return errors.New("user not found")
 	}
 
-	err = us.repository.DeleteUserById(userId)
+	user.ID = userIdFromClaim
+	err = us.repository.UpdateUser(user)
+	if err != nil {
+		return errors.New("error update user")
+	}
+
+	return nil
+}
+
+func (us UserService) DeleteUserById(userIdFromClaim int) error {
+	err := us.repository.FindUserById(userIdFromClaim)
+	if err != nil {
+		return errors.New("user not found")
+	}
+
+	err = us.repository.DeleteUserById(userIdFromClaim)
 	if err != nil {
 		return err
 	}
