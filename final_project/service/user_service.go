@@ -30,14 +30,14 @@ func (us UserService) LoginUser(user *model.User) (jwt string, err error) {
 	err = us.repository.FindUserByEmail(&userInDb, user.Email)
 	if err != nil {
 		fmt.Println("Login User (Service) find email:", err.Error())
-		err = errors.New("user cannot be found")
+		err = errors.New("incorrect email or password")
 		return
 	}
 
 	// check password
 	isPassMatch := helpers.ComparePassword([]byte(userInDb.Password), []byte(user.Password))
 	if !isPassMatch {
-		err = errors.New("incorrect password")
+		err = errors.New("incorrect email or password")
 		return
 	}
 

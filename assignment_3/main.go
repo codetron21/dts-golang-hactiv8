@@ -9,7 +9,14 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"time"
 )
+
+const (
+	fileName = "status.json"
+)
+
+var data File
 
 type File struct {
 	Status Status `json:"status"`
@@ -21,57 +28,70 @@ type Status struct {
 }
 
 func main() {
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			http.Error(w, "Method not allowed", http.StatusInternalServerError)
+	go loopCreateReadData()
+	http.HandleFunc("/", handleRoute)
+	http.ListenAndServe(":8080", nil)
+}
+
+func loopCreateReadData() {
+	for {
+		fmt.Println("run")
+
+		// generate data
+		data = File{
+			Status: Status{
+				Water: getRandomNumber(),
+				Wind:  getRandomNumber(),
+			},
+		}
+
+		// write json file
+		err := createJsonFile(fileName, data)
+		if err != nil {
+			println("error create json file", err)
 			return
 		}
 
-		var filepath = path.Join("views", "index.html")
-		var tmpl, err = template.ParseFiles(filepath)
-
+		// read json file
+		err = readJsonFile(fileName, &data)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			println("error read json file", err)
 			return
 		}
 
-		jsonFile, err := loadJsonFile("status.json")
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+		time.Sleep(3 * time.Second)
+	}
+}
 
-		byteValue, err := ioutil.ReadAll(jsonFile)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+func handleRoute(w http.ResponseWriter, r *http.Request) {
+	// check http method
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusInternalServerError)
+		return
+	}
 
-		jsonFile.Close()
+	// read html file
+	var filepath = path.Join("views", "index.html")
+	var tmpl, err = template.ParseFiles(filepath)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-		var data File
+	// templating
+	waterStatus, windStatus := data.Status.checkStatus()
 
-		json.Unmarshal(byteValue, &data)
-
-		data.Status.Water = getRandomNumber()
-		data.Status.Wind = getRandomNumber()
-		waterStatus, windStatus := data.Status.checkStatus()
-
-		fmt.Println(data)
-
-		err = tmpl.Execute(w, map[string]interface{}{
-			"water":       data.Status.Water,
-			"wind":        data.Status.Wind,
-			"waterStatus": waterStatus,
-			"windStatus":  windStatus,
-		})
-
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
+	err = tmpl.Execute(w, map[string]interface{}{
+		"water":       data.Status.Water,
+		"wind":        data.Status.Wind,
+		"waterStatus": waterStatus,
+		"windStatus":  windStatus,
 	})
 
-	http.ListenAndServe("localhost:8080", nil)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 func (s Status) checkStatus() (waterStatus string, windStatus string) {
@@ -94,14 +114,45 @@ func (s Status) checkStatus() (waterStatus string, windStatus string) {
 	return
 }
 
-func loadJsonFile(fileName string) (*os.File, error) {
+func createJsonFile(fileName string, data File) error {
+	file, err := json.MarshalIndent(data, "", " ")
+	if err != nil {
+		fmt.Println("error create file", err)
+		return err
+	}
+
+	err = ioutil.WriteFile(fileName, file, 0644)
+	if err != nil {
+		fmt.Println("error write file", err)
+		return err
+	}
+
+	return nil
+}
+
+func readJsonFile(fileName string, data *File) error {
 	jsonFile, err := os.Open(fileName)
 
 	if err != nil {
-		return nil, err
+		fmt.Println("error read file", err)
+		return err
 	}
 
-	return jsonFile, nil
+	byteValue, err := ioutil.ReadAll(jsonFile)
+	if err != nil {
+		fmt.Println("error read file json", err)
+		return err
+	}
+
+	jsonFile.Close()
+
+	err = json.Unmarshal(byteValue, data)
+	if err != nil {
+		fmt.Println("error read file unmarshal json")
+		return err
+	}
+
+	return nil
 }
 
 func getRandomNumber() int {
