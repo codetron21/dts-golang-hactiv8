@@ -27,7 +27,12 @@ func (repo PhotoRepository) GetAllPhotoById(userId int) (*[]model.Photo, error) 
 		Find(&photos).
 		Error
 
-	return &photos, err
+	if err != nil {
+		fmt.Println(err)
+		return nil, errors.New("error get all photo by id")
+	}
+
+	return &photos, nil
 }
 
 func (repo PhotoRepository) DeletePhotoById(photoId int) error {

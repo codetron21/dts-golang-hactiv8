@@ -17,7 +17,11 @@ func New(service *service.Service) Controller {
 		PhotoController: PhotoController{
 			service: service.PhotoService,
 		},
-		CommentController:     CommentController{},
-		SocialMediaController: SocialMediaController{},
+		CommentController: CommentController{
+			service: service.CommentService,
+		},
+		SocialMediaController: SocialMediaController{
+			service: service.SocialMediaService,
+		},
 	}
 }

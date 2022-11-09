@@ -12,9 +12,11 @@ type Comment struct {
 	ID        int        `gorm:"column:id;primaryKey;not null" json:"id"`
 	UserID    int        `gorm:"column:user_id;not null" json:"user_id"`
 	PhotoID   int        `gorm:"column:photo_id;not null" json:"photo_id"`
-	Message   string     `gorm:"column:message;not null" json:"message" valid:"required~,message must not be empty"`
+	Message   string     `gorm:"column:message;not null" json:"message" valid:"required~message must not be empty"`
 	CreatedAt *time.Time `gorm:"column:created_at" json:"created_at,omitempty"`
 	UpdatedAt *time.Time `gorm:"updated_at" json:"updated_at,omitempty"`
+	User      *User      `json:"User,omitempty"`
+	Photo     *Photo     `json:"Photo,omitempty"`
 }
 
 func (c Comment) BeforeCreate(db *gorm.DB) error {

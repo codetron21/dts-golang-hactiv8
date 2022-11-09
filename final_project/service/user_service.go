@@ -15,10 +15,8 @@ type UserService struct {
 func (us UserService) CreateUser(user *model.User) error {
 	user.Password = helpers.HashPassword(user.Password)
 	err := us.repository.CreateUser(user)
-
 	if err != nil {
-		fmt.Println("Create User (Service):", err.Error())
-		return errors.New("error creating user")
+		return err
 	}
 
 	return nil
@@ -55,13 +53,13 @@ func (us UserService) LoginUser(user *model.User) (jwt string, err error) {
 func (us UserService) UpdateUserById(user *model.User, userIdFromClaim int) error {
 	err := us.repository.FindUserById(userIdFromClaim)
 	if err != nil {
-		return errors.New("user not found")
+		return err
 	}
 
 	user.ID = userIdFromClaim
 	err = us.repository.UpdateUser(user)
 	if err != nil {
-		return errors.New("error update user")
+		return err
 	}
 
 	return nil
@@ -70,7 +68,7 @@ func (us UserService) UpdateUserById(user *model.User, userIdFromClaim int) erro
 func (us UserService) DeleteUserById(userIdFromClaim int) error {
 	err := us.repository.FindUserById(userIdFromClaim)
 	if err != nil {
-		return errors.New("user not found")
+		return err
 	}
 
 	err = us.repository.DeleteUserById(userIdFromClaim)
